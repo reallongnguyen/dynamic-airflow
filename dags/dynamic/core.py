@@ -11,7 +11,7 @@ def create_dag(source):
       "owner": "airflow",
       "start_date": datetime(2024, 10, 24, tz="UTC"),
       "retries": source["dag"]["retries"],
-      "rety_delay": timedelta(minutes=3)
+      "retry_delay": timedelta(minutes=3)
     }
 
     @dag(dag_id=dag_id, schedule=schedule, default_args=default_args, catchup=False, dag_display_name=dag_disp_name, params={ "source": source })
@@ -26,9 +26,9 @@ def create_dag(source):
 
           print("Extract", src)
           usecase_pkg = "dynamic.usecases"
-          extract_mod_name = src["extract"]["module_name"]
+          extract_mod_name = f"{usecase_pkg}.{src["extract"]["module_name"]}"
 
-          extract_mod = importlib.import_module(name=extract_mod_name, package=usecase_pkg)
+          extract_mod = importlib.import_module(name=extract_mod_name)
           extract_mod.extract(src["id"])
 
         @task()
