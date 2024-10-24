@@ -1,15 +1,58 @@
 from airflow.decorators import dag, task
+import importlib
+from pendulum import datetime
+from datetime import timedelta
 
-def create_dag(dag_id, schedule, dag_number, default_args):
-    @dag(dag_id=dag_id, schedule=schedule, default_args=default_args, catchup=False)
-    def hello_world_dag():
+def create_dag(source):
+    dag_id = source["dag"]["id"]
+    schedule = source["dag"]["schedule"]
+    dag_disp_name = source["dag"]["disp_name"] if "disp_name" in source["dag"] else dag_id
+    default_args = {
+      "owner": "airflow",
+      "start_date": datetime(2024, 10, 24, tz="UTC"),
+      "retries": source["dag"]["retries"],
+      "rety_delay": timedelta(minutes=3)
+    }
+
+    @dag(dag_id=dag_id, schedule=schedule, default_args=default_args, catchup=False, dag_display_name=dag_disp_name, params={ "source": source })
+    def extract_dag():
         @task()
-        def hello_world():
-            print("Hello World")
-            print("This is DAG: {}".format(str(dag_number)))
+        def test_and_build(**kwargs):
+            print("Test and build")
 
-        hello_world()
+        @task()
+        def extract(**kwargs):
+          src = kwargs["params"]["source"]
 
-    generated_dag = hello_world_dag()
+          print("Extract", src)
+          usecase_pkg = "dynamic.usecases"
+          extract_mod_name = src["extract"]["module_name"]
+
+          extract_mod = importlib.import_module(name=extract_mod_name, package=usecase_pkg)
+          extract_mod.extract(src["id"])
+
+        @task()
+        def normalize(**kwargs):
+          print("Normalize")
+
+        @task()
+        def transform(**kwargs):
+          print("Transform")
+
+        @task()
+        def check_quality(**kwargs):
+          print("Check quality")
+
+        @task()
+        def delta_load(**kwargs):
+          print("Delta load")
+
+        @task()
+        def trigger(**kwargs):
+          print("Trigger")
+
+        test_and_build() >> extract() >> normalize() >> transform() >> check_quality() >> delta_load() >> trigger()
+
+    generated_dag = extract_dag()
 
     return generated_dag

@@ -1,12 +1,9 @@
-from pendulum import datetime
 from dynamic.core import create_dag
+from dynamic.ports.source_airflow_variable import list as source_list
 
-for i in range(8):
-  dag_id = f"hello_{i}"
-  default_args = {
-    "owner": "airflow",
-    "start_date": datetime(2024, 10, 24, tz="UTC"),
-    "retries": 3,
-  }
+sources = source_list()
 
-  globals()[dag_id] = create_dag(dag_id=dag_id, schedule='*/5 * * * *', dag_number=i, default_args=default_args)
+for source in sources.values():
+  dag_id = source["dag"]["id"]
+
+  globals()[dag_id] = create_dag(source=source)
