@@ -28,16 +28,32 @@ def extract(kwargs):
     )
     load_table = extract_config["dst_table"]
     dataset: str | None = None
+    load_table_type: str
     unique_id = kwargs["ts_nodash"]
     stg_table = f"{load_table}_{unique_id}"
     stg_table_scheme_fields = []
 
     for column_name in extract_config["column_order"]:
-        stg_table_scheme_fields.append(schema_fields[column_name])
+        if column_name in schema_fields:
+            stg_table_scheme_fields.append(schema_fields[column_name])
+        else:
+            print(
+                f"""column {column_name} was defined in column_order
+                but not found in schema_fields"""
+            )
 
     for table in tables:
         if table["name"] == load_table:
             dataset = table["dataset"]
+            load_table_type = table["type"]
+
+    if dataset is None:
+        print(f"not found load table {load_table} in table config")
+        return
+
+    if load_table_type != "load":
+        print(f"unexpected table type {load_table_type}. Required load table")
+        return
 
     foot_print = json.dumps(
         {
@@ -77,8 +93,9 @@ def extract(kwargs):
         ),
     )
 
+    # load gcs file to staging
     GCSToBigQueryOperator(
-        task_id="gcs_to_bq",
+        task_id="load_gcs_to_bq",
         bucket=bucket_name,
         source_objects=files,
         destination_project_dataset_table=f"{dataset}.{stg_table}",
@@ -107,22 +124,28 @@ def extract(kwargs):
         },
     )
 
+    # merge staging to load
+    load_columns = []
+    staging_columns = []
+
+    for column in schema_fields.values():
+        load_columns.append(column["name"])
+        staging_columns.append(column["name"])
+
+    load_columns.append("ingestion_ts")
+    staging_columns.append(f"TIMESTAMP('{ts}') AS ingestion_ts")
+
+    load_columns_str = ", ".join(load_columns)
+    staging_columns_str = ", ".join(staging_columns)
+
     insert_sql = f"""
         INSERT INTO
             `{dataset}.{load_table}`
         (
-            id,
-            user_id,
-            message,
-            timestamp,
-            ingestion_ts
+            {load_columns_str}
         )
         SELECT
-            id,
-            user_id,
-            message,
-            timestamp,
-            TIMESTAMP('{ts}') AS ingestion_ts
+            {staging_columns_str}
         FROM
             `{dataset}.{stg_table}`
     """
