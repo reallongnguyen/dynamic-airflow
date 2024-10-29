@@ -1,0 +1,80 @@
+{
+  "source": {
+    "vn_chat_summary": {
+      "dag": {
+        "disp_name": "[Vietnam] Chat Summary",
+        "id": "vn_chat_summary",
+        "retries": 3,
+        "schedule": "*/5 * * * *"
+      },
+      "extract": {
+        "config": {
+          "bucket": "isling-data",
+          "column_order": [
+            "id",
+            "user_id",
+            "message",
+            "timestamp"
+          ],
+          "dst_table": "t_conversations_load",
+          "file_format": "csv",
+          "prefix": "vn/conversations"
+        },
+        "module_name": "extract.extract_gcs"
+      },
+      "id": "vn_chat_summary",
+      "schema_fields": {
+        "id": {
+          "mode": "REQUIRED",
+          "name": "id",
+          "type": "STRING"
+        },
+        "message": {
+          "mode": "REQUIRED",
+          "name": "message",
+          "type": "STRING"
+        },
+        "timestamp": {
+          "mode": "REQUIRED",
+          "name": "timestamp",
+          "type": "TIMESTAMP"
+        },
+        "user_id": {
+          "mode": "REQUIRED",
+          "name": "user_id",
+          "type": "STRING"
+        }
+      },
+      "tables": [
+        {
+          "dataset": "isling_data",
+          "name": "t_conversations_load",
+          "partition_field": "ingestion_ts",
+          "type": "load"
+        },
+        {
+          "dataset": "isling_data",
+          "name": "t_conversations_cleanse",
+          "partition_field": "timestamp",
+          "type": "cleanse"
+        },
+        {
+          "dataset": "isling_data",
+          "name": "t_conversations_history",
+          "partition_field": "timestamp",
+          "type": "history"
+        },
+        {
+          "dataset": "isling_data",
+          "name": "t_conversations_daily",
+          "type": "daily"
+        },
+        {
+          "dataset": "isling_data",
+          "name": "t_conversations_latest",
+          "type": "latest"
+        }
+      ]
+    }
+  }
+}

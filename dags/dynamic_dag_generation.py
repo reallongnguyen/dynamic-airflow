@@ -1,5 +1,7 @@
-from dynamic.core import create_dag
-from dynamic.ports.source_airflow_variable import list as source_list
+from dynamic.user_interface.adapter.airflow import create_dag
+from dynamic.infrastructure.repositories.source_airflow_variable import (
+    list as source_list,
+)
 
 sources = source_list()
 
