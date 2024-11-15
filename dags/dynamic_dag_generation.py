@@ -6,6 +6,6 @@ from dynamic.infrastructure.repositories.source_airflow_variable import (
 sources = source_list()
 
 for source in sources.values():
-    dag_id = source["dag"]["id"]
+    dag_id = source['dag']['id']
 
     globals()[dag_id] = create_dag(source=source)

@@ -9,24 +9,24 @@ from pendulum import DateTime
 
 
 def extract(kwargs):
-    data_interval_start: DateTime = kwargs['data_interval_start']
-    data_interval_end: DateTime = kwargs['data_interval_end']
+    data_interval_start: DateTime = kwargs["data_interval_start"]
+    data_interval_end: DateTime = kwargs["data_interval_end"]
 
-    bucket_name = 'isling-data'
-    prefix = 'vn/comments'
-    match_glob = '**/*.csv'
+    bucket_name = "isling-data"
+    prefix = "vn/comments"
+    match_glob = "**/*.csv"
 
-    dataset = 'isling_data'
-    unique_id = kwargs['ts_nodash']
+    dataset = "isling_data"
+    unique_id = kwargs["ts_nodash"]
     stg_table = f"comments_{unique_id}"
-    data_table = 'comments'
+    data_table = "comments"
 
     foot_print = json.dumps({
-        'bucket_name': bucket_name,
-        'prefix': prefix,
-        'match_glob': match_glob,
-        'timespan_start': data_interval_start.to_datetime_string(),
-        'timespan_end': data_interval_end.to_datetime_string(),
+        "bucket_name": bucket_name,
+        "prefix": prefix,
+        "match_glob": match_glob,
+        "timespan_start": data_interval_start.to_datetime_string(),
+        "timespan_end": data_interval_end.to_datetime_string(),
     })
 
     print(f"extract files from {foot_print}")
@@ -47,21 +47,21 @@ def extract(kwargs):
         return
 
     GCSToBigQueryOperator(
-        task_id='gcs_to_bq',
+        task_id="gcs_to_bq",
         bucket=bucket_name,
         source_objects=files,
         destination_project_dataset_table=f"{dataset}.{stg_table}",
         schema_fields=[
-            {'name': 'id', 'type': 'STRING', 'mode': 'REQUIRED'},
-            {'name': 'user_id', 'type': 'STRING', 'mode': 'REQUIRED'},
-            {'name': 'comment', 'type': 'STRING', 'mode': 'REQUIRED'},
+            {"name": "id", "type": "STRING", "mode": "REQUIRED"},
+            {"name": "user_id", "type": "STRING", "mode": "REQUIRED"},
+            {"name": "comment", "type": "STRING", "mode": "REQUIRED"},
             {
-                'name': 'created_at',
-                'type': 'TIMESTAMP',
-                'mode': 'REQUIRED',
+                "name": "created_at",
+                "type": "TIMESTAMP",
+                "mode": "REQUIRED",
             },
         ],
-        write_disposition='WRITE_TRUNCATE',
+        write_disposition="WRITE_TRUNCATE",
     ).execute(kwargs)
 
     bq_hook = BigQueryHook()
@@ -106,8 +106,8 @@ def extract(kwargs):
     """
 
     bq_hook.insert_job(
-        configuration={'query': {
-            'query': sql,
-            'useLegacySql': False,
+        configuration={"query": {
+            "query": sql,
+            "useLegacySql": False,
         }},
     )

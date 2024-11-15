@@ -14,3 +14,4 @@ no_spaces_around_selected_binary_operators = "*,/"
 coalesce_brackets = True
 space_between_ending_comma_and_closing_bracket = False
 split_before_expression_after_opening_paren = False
+column_limit = 88

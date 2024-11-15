@@ -10,13 +10,12 @@ def run_yapf(target):
     else:
         files = [
             os.path.join(root, file) for root, _, files in os.walk(target)
-            for file in files
-            if file.endswith('.py') and not root.startswith('./.')
+            for file in files if file.endswith(".py") and not root.startswith("./.")
         ]
 
     for file in files:
         try:
-            command = ['yapf', '-i', file]
+            command = ["yapf", "-i", file]
             subprocess.run(command, check=True, capture_output=True, text=True)
             print(f"Formatted: {file}")
         except subprocess.CalledProcessError as e:
@@ -25,15 +24,13 @@ def run_yapf(target):
 
 def main():
     if len(sys.argv) < 2:
-        print(
-            'Usage: python3 format.py <directory_or_file> e.g. python3 format.py ./dags'
-        )
+        print("Usage: python3 format.py <directory_or_file> e.g. python3 format.py .")
         sys.exit(1)
 
     target = sys.argv[1]
     run_yapf(target)
-    print('Formatting completed.')
+    print("Formatting completed.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
