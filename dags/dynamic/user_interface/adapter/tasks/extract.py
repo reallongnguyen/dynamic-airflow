@@ -1,7 +1,6 @@
 from airflow.decorators import task
 import importlib
 
-
 @task()
 def extract(**kwargs):
     src = kwargs["params"]["source"]

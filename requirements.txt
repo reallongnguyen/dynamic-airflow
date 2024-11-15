@@ -1,5 +1,0 @@
-apache-airflow[google]
-flake8-bugbear==24.8.19
-Jinja2==3.1.4
-pandas==2.2.3
-pendulum==3.0.0
